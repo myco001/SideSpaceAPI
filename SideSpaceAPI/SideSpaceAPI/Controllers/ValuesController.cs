@@ -127,7 +127,7 @@ namespace SideSpaceAPI.Controllers
 
     public class MentalController : ApiController
     {
-        // GET api/values
+        // GET api/mental
         public List<Results> Get()
         {
             // Create connection
@@ -135,6 +135,90 @@ namespace SideSpaceAPI.Controllers
 
             MySqlCommand query = conn.CreateCommand();
             query.CommandText = "SELECT * FROM hospital WHERE Mental = 'Y';";
+
+            var results = new List<Results>();
+
+            try
+            {
+                conn.Open();
+            }
+            catch (MySql.Data.MySqlClient.MySqlException ex)
+            {
+                results.Add(new Results(null, null, null, null, null, null, null, ex.ToString()));
+            }
+
+            MySqlDataReader fetch_query = query.ExecuteReader();
+
+            while (fetch_query.Read())
+            {
+                results.Add(new Results(fetch_query["HName"].ToString(),
+                    fetch_query["Address"].ToString(),
+                    fetch_query["Suburb"].ToString(),
+                    fetch_query["Postcode"].ToString(),
+                    fetch_query["Lat"].ToString(),
+                    fetch_query["Lon"].ToString(),
+                    fetch_query["Mental"].ToString(),
+                    null));
+            }
+
+            return results;
+        }
+    }
+
+    public class PostcodeController : ApiController
+    {
+        // GET api/values
+        public List<Results> Get(string postcode)
+        {
+            // Create connection
+            MySqlConnection conn = WebApiConfig.conn();
+
+            MySqlCommand query = conn.CreateCommand();
+            query.CommandText = "SELECT * FROM hospital WHERE postcode = @postcode;";
+
+            query.Parameters.AddWithValue("@postcode", postcode);
+
+            var results = new List<Results>();
+
+            try
+            {
+                conn.Open();
+            }
+            catch (MySql.Data.MySqlClient.MySqlException ex)
+            {
+                results.Add(new Results(null, null, null, null, null, null, null, ex.ToString()));
+            }
+
+            MySqlDataReader fetch_query = query.ExecuteReader();
+
+            while (fetch_query.Read())
+            {
+                results.Add(new Results(fetch_query["HName"].ToString(),
+                    fetch_query["Address"].ToString(),
+                    fetch_query["Suburb"].ToString(),
+                    fetch_query["Postcode"].ToString(),
+                    fetch_query["Lat"].ToString(),
+                    fetch_query["Lon"].ToString(),
+                    fetch_query["Mental"].ToString(),
+                    null));
+            }
+
+            return results;
+        }
+    }
+
+    public class SuburbController : ApiController
+    {
+        // GET api/values
+        public List<Results> Get(string suburb)
+        {
+            // Create connection
+            MySqlConnection conn = WebApiConfig.conn();
+
+            MySqlCommand query = conn.CreateCommand();
+            query.CommandText = "SELECT * FROM hospital WHERE suburb = @suburb;";
+
+            query.Parameters.AddWithValue("@suburb", suburb);
 
             var results = new List<Results>();
 
