@@ -1,0 +1,258 @@
+<div id="searchBar" style="display: none">
+    <p style="font-weight:bold;">Search by postcode or suburb name to find the hospitals there.</p>
+    <input type="search" id="searchInput" placeholder="Postcode or suburb name">
+    <input type=button value="Search" id="searchButton">
+    <p></p>
+</div>
+<div id="map" style="height: 500px; display: none"></div>
+<script>
+    //Div on Wordpress
+    //document.getElementById("hospital").addEventListener("click", showMap);
+    
+    function showMap(){
+        document.getElementById("searchBar").style.display = "block";
+        document.getElementById("map").style.display = "block";
+    }
+    // Store all hospital information in json file.
+    var allHospitals = [];
+    // Store all hospital information in marker object.
+    var allHospitalMarkers = [];
+    // Store marker object.
+    var markers = [];
+    // Store search results
+    var results = [];
+    var map;
+    var client;
+    var infoWindow;
+    var markerCluster;
+    
+    document.getElementById("searchInput").addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            document.getElementById("searchButton").click();
+        }
+    });
+    
+    document.getElementById("searchButton").addEventListener("click", search);
+
+    var HttpClient = function() {
+        this.get = function(aUrl, aCallback) {
+            var anHttpRequest = new XMLHttpRequest();
+            anHttpRequest.onreadystatechange = function() { 
+                if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
+                    aCallback(anHttpRequest.responseText);
+            }
+            anHttpRequest.open( "GET", aUrl, true );            
+            anHttpRequest.send( null );
+        }
+    }
+
+    /**
+    * The CenterControl adds a control to the map that recenters the map on
+    * Chicago.
+    * This constructor takes the control DIV as an argument.
+    * @constructor
+    */
+    function CenterControl(controlDiv, map) {
+
+        // Set CSS for the control border.
+        var controlUI = document.createElement('div');
+        controlUI.style.backgroundColor = '#fff';
+        controlUI.style.border = '2px solid #fff';
+        controlUI.style.borderRadius = '3px';
+        controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+        controlUI.style.cursor = 'pointer';
+        controlUI.style.marginBottom = '22px';
+        controlUI.style.textAlign = 'center';
+        controlUI.title = 'Click to recenter to current location';
+        controlDiv.appendChild(controlUI);
+
+        // Set CSS for the control interior.
+        var controlText = document.createElement('div');
+        controlText.style.color = 'rgb(25,25,25)';
+        controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+        controlText.style.fontSize = '16px';
+        controlText.style.lineHeight = '38px';
+        controlText.style.paddingLeft = '5px';
+        controlText.style.paddingRight = '5px';
+        controlText.innerHTML = 'Current Location';
+        controlUI.appendChild(controlText);
+
+        // Setup the click event listeners: simply set the map to Chicago.
+        controlUI.addEventListener('click', function() {
+            getCurrentLocation();
+        });
+
+    }
+
+    // Initialize and add the map
+    function initMap() {
+        // The location of Monash Caulfield
+        monash = {lat: -37.877010, lng: 145.044266};
+        // The map, centered at Monash
+        map = new google.maps.Map(
+            document.getElementById('map'), {zoom: 10, center: monash, streetViewControl: false});
+        infowindow = new google.maps.InfoWindow();
+        client = new HttpClient();
+        allHospital();
+
+        // Create the DIV to hold the control and call the CenterControl()
+        // constructor passing in this DIV.
+        var centerControlDiv = document.createElement('div');
+        var centerControl = new CenterControl(centerControlDiv, map);
+
+        centerControlDiv.index = 1;
+        map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);
+    }
+
+
+    function getCurrentLocation() {
+        // Try HTML5 geolocation.
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                map.setCenter(pos);
+                updateCluster(allHospitals);
+            }, function() {
+                handleLocationError(true, infoWindow, map.getCenter());
+            });
+        } else {
+            // Browser doesn't support Geolocation
+            handleLocationError(false, infoWindow, map.getCenter());
+        }
+    }
+
+    function handleLocationError(browserHasGeolocation, pos) {
+        if(browserHasGeolocatio = true){
+            alert("Error: The Geolocation service failed.");
+        }else{
+            alert("Error: Your browser doesn\'t support geolocation.");
+        }
+    }
+
+    // Get data of all VIC hospitals.
+    function allHospital() {
+        client.get('https://sidespaceapi.azurewebsites.net/api/values', function(response) {
+            allHospitals = JSON.parse(response);
+            addMarker(allHospitals);
+            allHospitalMarkers = markers;
+        });
+    }
+
+    // Get results of input
+    function search() {
+        results = [];
+        subinfo = [];
+        var searchInput = document.getElementById("searchInput").value;
+
+        // When not input get, ask for input and show all hospital
+        if(searchInput.length == 0){
+            alert("Please enter the postcode or suburb name.");
+            // Show all hospital
+            showResults(allHospitals, '');
+        // When the input is a number, check if it is the right postcode in Victoria
+        }else if(searchInput == parseInt(searchInput)){
+            if(searchInput>=3000 && searchInput<4000){
+                for (var i = 0; i < allHospitals.length; i++){
+                    subinfo.push(allHospitals[i].Suburb);
+                    if(allHospitals[i].Postcode == searchInput){
+                        results.push(allHospitals[i]);
+                    }
+                }
+                showResults(results, 'Postcode area.');
+            }else{
+                alert("Please enter the right postcode.");
+                document.getElementById("searchInput").value = '';
+            }
+        // When the input is other than number, check if it is the right suburb
+        }else{
+            for (var i = 0; i < allHospitals.length; i++){
+                if(allHospitals[i].Suburb.toLowerCase() == searchInput.toLowerCase()){
+                    results.push(allHospitals[i]);
+                }
+            }
+            showResults(results, 'Suburb.');
+        }
+    }
+
+    // Set map on the results with search input
+    function showResults(results, input){
+        if(results.length == 0){
+            alert("No hospital found in this " + input);
+        }else if(results.length == 138){
+            updateCluster(allHospitals);
+            map.setCenter(monash);
+            map.setZoom(10);
+        }else{
+            updateCluster(results);
+            var latLng = new google.maps.LatLng(results[0].Lat, results[0].Lon);
+            map.setCenter(latLng);
+            map.setZoom(14);
+        }
+    }
+
+    //clear the old marker cluster and add the new markers.
+    function updateCluster(newMarkers) {
+        if (markerCluster instanceof MarkerClusterer){
+            console.log(markerCluster);
+            markerCluster.removeMarkers(markers);
+            console.log(markerCluster);
+        }
+        setMapOnAll(null, allHospitalMarkers);
+        addMarker(newMarkers);
+    }
+
+    function addMarker(obj) {
+        markers = [];
+        for (var i = 0; i < obj.length; i++) {
+            var latLng = new google.maps.LatLng(obj[i].Lat, obj[i].Lon);
+            var icon = {
+                url: 'https://image.flaticon.com/icons/svg/119/119065.svg',
+                scaledSize: new google.maps.Size(40, 40),
+                origin: new google.maps.Point(0, 0),
+                anchor: new google.maps.Point(20, 40)
+            }
+
+            // Creating a marker and putting it on the map
+            marker = new google.maps.Marker({
+                position: latLng,
+                map: map,
+                icon: icon
+            });
+
+            var message = "<p><b>" + obj[i].HName + "</b></p>" + 
+                          "<p> Address: " + obj[i].Address + " " + obj[i].Suburb + "</p>";
+
+            attachMessage(marker, message);
+            markers.push(marker);
+        }
+
+        // Add a marker clusterer to manage the markers.
+        markerCluster = new MarkerClusterer(map, markers,
+            {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+    }
+
+    // Add message to infowindo
+    function attachMessage(marker, messaga) {
+        google.maps.event.addListener(marker, 'click', function(e) {
+            infowindow.setContent(messaga);
+            infowindow.open(map, this);
+        });
+    }
+
+    // Sets the map on all markers in the array.
+    function setMapOnAll(map, group) {
+        for (var i = 0; i < group.length; i++) {
+          group[i].setMap(map);
+        }
+    }
+</script>
+
+<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCOrRc4XSsptM3keW8TGT0zb5lS2PjaFzE&callback=initMap">
+</script>
