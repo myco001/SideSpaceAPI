@@ -32,6 +32,24 @@ namespace SideSpaceAPI.Controllers
         }
     }
 
+    public class PostcodeResults
+    {
+        public string Postcode { get; set; }
+        public string Suburb { get; set; }
+        public string Lat { get; set; }
+        public string Lon { get; set; }
+        public string Error { get; set; }
+
+        public PostcodeResults(string Postcode, string Suburb, string Lat, string Lon, string Error)
+        {
+            this.Postcode = Postcode;
+            this.Suburb = Suburb;
+            this.Lat = Lat;
+            this.Lon = Lon;
+            this.Error = Error;
+        }
+    }
+
     public class ValuesController : ApiController
     {
         // GET api/values
@@ -108,21 +126,6 @@ namespace SideSpaceAPI.Controllers
             }
             return results;
         }
-
-        // POST api/values
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/values/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        public void Delete(int id)
-        {
-        }
     }
 
     public class MentalController : ApiController
@@ -167,18 +170,16 @@ namespace SideSpaceAPI.Controllers
 
     public class PostcodeController : ApiController
     {
-        // GET api/values
-        public List<Results> Get(string postcode)
+        // GET api/postcode
+        public List<PostcodeResults> Get()
         {
             // Create connection
             MySqlConnection conn = WebApiConfig.conn();
 
             MySqlCommand query = conn.CreateCommand();
-            query.CommandText = "SELECT * FROM hospital WHERE postcode = @postcode;";
+            query.CommandText = "SELECT * FROM postcode;";
 
-            query.Parameters.AddWithValue("@postcode", postcode);
-
-            var results = new List<Results>();
+            var results = new List<PostcodeResults>();
 
             try
             {
@@ -186,62 +187,18 @@ namespace SideSpaceAPI.Controllers
             }
             catch (MySql.Data.MySqlClient.MySqlException ex)
             {
-                results.Add(new Results(null, null, null, null, null, null, null, ex.ToString()));
+                results.Add(new PostcodeResults(null, null, null, null, ex.ToString()));
             }
 
             MySqlDataReader fetch_query = query.ExecuteReader();
 
             while (fetch_query.Read())
             {
-                results.Add(new Results(fetch_query["HName"].ToString(),
-                    fetch_query["Address"].ToString(),
-                    fetch_query["Suburb"].ToString(),
+                results.Add(new PostcodeResults(
                     fetch_query["Postcode"].ToString(),
+                    fetch_query["Suburb"].ToString(),
                     fetch_query["Lat"].ToString(),
                     fetch_query["Lon"].ToString(),
-                    fetch_query["Mental"].ToString(),
-                    null));
-            }
-
-            return results;
-        }
-    }
-
-    public class SuburbController : ApiController
-    {
-        // GET api/values
-        public List<Results> Get(string suburb)
-        {
-            // Create connection
-            MySqlConnection conn = WebApiConfig.conn();
-
-            MySqlCommand query = conn.CreateCommand();
-            query.CommandText = "SELECT * FROM hospital WHERE suburb = @suburb;";
-
-            query.Parameters.AddWithValue("@suburb", suburb);
-
-            var results = new List<Results>();
-
-            try
-            {
-                conn.Open();
-            }
-            catch (MySql.Data.MySqlClient.MySqlException ex)
-            {
-                results.Add(new Results(null, null, null, null, null, null, null, ex.ToString()));
-            }
-
-            MySqlDataReader fetch_query = query.ExecuteReader();
-
-            while (fetch_query.Read())
-            {
-                results.Add(new Results(fetch_query["HName"].ToString(),
-                    fetch_query["Address"].ToString(),
-                    fetch_query["Suburb"].ToString(),
-                    fetch_query["Postcode"].ToString(),
-                    fetch_query["Lat"].ToString(),
-                    fetch_query["Lon"].ToString(),
-                    fetch_query["Mental"].ToString(),
                     null));
             }
 
