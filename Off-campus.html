@@ -1,0 +1,253 @@
+<div tooltip="If you are facing any psychological or personal problems (such as anxiety, depression, loneliness, suicidal or negative thoughts, family issues and addiction), counseling will lead you to professional guidance and assistance and help you deal with these problems.">
+    <input type="checkbox" id="counselling" value="counselling" checked> Counselling
+</div>
+
+<div tooltip="This will assist you in processing with legal issues such as giving you legal advice, knowing your rights and responsibilities, filling out legal forms, reporting to the police, preparing you to be a witness and supporting you in the court.">
+    <input type="checkbox" id="legal" value="legal"> Legal Support
+</div>
+
+<div tooltip="This will provide you with short-term assistance and resources support in the time of your need, so that you can cope with any crisis situation (such as recent sexual abuse or suicidal tendencies or thoughts) you might be currently facing or have experienced before.">
+    <input type="checkbox" id="crisis" value="crisis"> Crisis Support
+</div>
+
+<div tooltip="If you require any referrals to doctors and hospitals, they will help you.">
+    <input type="checkbox" id="referrals" value="referrals"> Referrals
+</div>
+
+<div tooltip="If you need free medical support, check-up or examination and hospital aids please go through this organization.">
+    <input type="checkbox" id="medical" value="medical"> Free medical service
+</div>
+
+<div tooltip="This will support you, if you are in a crisis situation and need immediate accommodation for your safety.">
+    <input type="checkbox" id="accommodation" value="accommodation"> Emergency Accommodation
+</div>
+
+<div tooltip="No need to call TIS National for free interpreter, call them directly.">
+    <input type="checkbox" id="interpreter" value="interpreter"> Own Free Interpreter
+</div>
+
+<div tooltip="This will lead you to the support organizations and their services for child sexual abuse.">
+    <input type="checkbox" id="child" value="child"> Childhood Trauma and Abuse Support
+</div>
+
+
+
+<div id="respect" style="display: block">
+    <p>respect</p>
+</div>
+<div id="sacl" style="display: block">
+    <p>sacl</p>
+</div>
+<div id="casa" style="display: block">
+    <p>casa</p>
+</div>
+<div id="la" style="display: block">
+    <p>la</p>
+</div>
+<div id="saca" style="display: block">
+    <p>saca</p>
+</div>
+<div id="kh" style="display: block">
+    <p>kh</p>
+</div>
+<div id="ssfvrc" style="display: block">
+    <p>ssfvrc</p>
+</div>
+
+
+
+<style>
+    [tooltip]:before {
+        content: attr(tooltip);
+        position: absolute;
+        opacity: 0;
+        transition: all 0.15s ease;
+        padding: 10px;
+        color: #333;
+        border-radius: 10px;
+        box-shadow: 2px 2px 1px silver;    
+    }
+
+    [tooltip]:hover:before {
+        opacity: 1;
+        background: #add8e6;
+        margin-top: 30px;
+        margin-left: 15px;
+        z-index: 1000;
+    }
+
+    [tooltip]:not([tooltip-persistent]):before {
+        pointer-events: none;
+    }
+</style>
+
+<div>
+    <button id="clear" style="display: none"> Clear All </button>
+    <p id="noOrg" style="display: none">No organization providing those service at the same time, please contact them seperately.</p>
+</div>
+
+<script type='text/javascript'>
+    
+    setTimeout(function(){
+        hideAll();}, 1000);
+    
+    // Store the tag of each organizations
+    var respect = ['counselling', 'legal', 'crisis', 'referrals'];
+    var sacl = ['counselling', 'legal', 'crisis', 'referrals'];
+    var casa = ['counselling', 'legal', 'crisis', 'referrals', 'medical'];
+    var la = ['counselling', 'crisis'];
+    var saca = ['counselling', 'child', 'interpreter'];
+    var kh = ['counselling', 'child'];
+    var ssfvrc = ['counselling', 'legal', 'accommodation', 'referrals', 'child'];
+    
+    // Store current checked option
+    var current = [];
+    // Store current showed DIV
+    var showDiv = [];
+    
+    document.getElementById("counselling").setAttribute("title", "If you are facing any psychological or personal problems (such as anxiety, depression, loneliness, suicidal or negative thoughts, family issues and addiction), counseling will lead you to professional guidance and assistance and help you deal with these problems.");
+    
+    document.getElementById("counselling").addEventListener("click", check);
+    document.getElementById("legal").addEventListener("click", check);
+    document.getElementById("crisis").addEventListener("click", check);
+    document.getElementById("referrals").addEventListener("click", check);
+    document.getElementById("medical").addEventListener("click", check);
+    document.getElementById("accommodation").addEventListener("click", check);
+    document.getElementById("interpreter").addEventListener("click", check);
+    document.getElementById("child").addEventListener("click", check);
+    document.getElementById("clear").addEventListener("click", clearAll);
+    
+    // When a checkbox is checked or unchecked, to add to or remove from the current option array.
+    function check() {
+        if (this.checked) {
+            current.push(this.value);
+        }else{
+            for( var i = 0; i < current.length; i++){ 
+                if (current[i] === this.value){
+                        current.splice(i, 1);
+                        break;
+                }
+            }
+        }
+        
+        // If any checkbox is checked, show the clearAll button.
+        if (current.length > 0){
+            document.getElementById("clear").style.display = "block";
+            show();
+        }else{
+            document.getElementById("clear").style.display = "none";
+            hideAll();
+        }
+    }
+    
+    function clearAll() {
+        document.getElementById("counselling").checked = false;
+        document.getElementById("legal").checked = false;
+        document.getElementById("crisis").checked = false;
+        document.getElementById("referrals").checked = false;
+        document.getElementById("medical").checked = false;
+        document.getElementById("accommodation").checked = false;
+        document.getElementById("interpreter").checked = false;
+        document.getElementById("child").checked = false;
+        document.getElementById("clear").style.display = "none";
+        current = [];
+        hideAll();
+    }
+    
+    // Show organizations with selected support
+    function show() {
+        hideAll();
+        
+        if (selected(respect)){
+            document.getElementById("respect").style.display = "block";
+            if (showDiv.indexOf("respect") === -1){
+                showDiv.push("respect");
+            }
+        }
+        if (selected(sacl)){
+            document.getElementById("sacl").style.display = "block";
+            if (showDiv.indexOf("sacl") === -1){
+                showDiv.push("sacl");
+            }
+        }
+        if (selected(casa)){
+            document.getElementById("casa").style.display = "block";
+            if (showDiv.indexOf("casa") === -1){
+                showDiv.push("casa");
+            }
+        }
+        if (selected(la)){
+            document.getElementById("la").style.display = "block";
+            if (showDiv.indexOf("la") === -1){
+                showDiv.push("la");
+            }
+        }
+        if (selected(saca)){
+            document.getElementById("saca").style.display = "block";
+            if (showDiv.indexOf("saca") === -1){
+                showDiv.push("saca");
+            }
+        }
+        if (selected(kh)){
+            document.getElementById("kh").style.display = "block";
+            if (showDiv.indexOf("kh") === -1){
+                showDiv.push("kh");
+            }
+        }
+        if (selected(ssfvrc)){
+            document.getElementById("ssfvrc").style.display = "block";
+            if (showDiv.indexOf("ssfvrc") === -1){
+                showDiv.push("ssfvrc");
+            }
+        }
+        if (showDiv.length === 0) {
+            document.getElementById("noOrg").style.display = "block";
+        }
+        
+    }
+    
+    function hideAll() {
+        document.getElementById("respect").style.display = "none";
+        document.getElementById("sacl").style.display = "none";
+        document.getElementById("casa").style.display = "none";
+        document.getElementById("la").style.display = "none";
+        document.getElementById("saca").style.display = "none";
+        document.getElementById("kh").style.display = "none";
+        document.getElementById("ssfvrc").style.display = "none";
+        document.getElementById("noOrg").style.display = "none";
+        showDiv = [];
+    }
+    
+    function showAll() {
+        document.getElementById("respect").style.display = "block";
+        document.getElementById("sacl").style.display = "block";
+        document.getElementById("casa").style.display = "block";
+        document.getElementById("la").style.display = "block";
+        document.getElementById("saca").style.display = "block";
+        document.getElementById("kh").style.display = "block";
+        document.getElementById("ssfvrc").style.display = "block";
+        showDiv = ['respect', 'sacl', 'casa', 'la', 'saca', 'kh', 'ssfvrc'];
+    }
+    
+    function selected(org) {
+        if (current.length == 0){
+            return false;
+        }else if (org.length < current.length){
+            return false;
+        }else{
+            for (var i = 0; i<current.length; i++){
+                var find = false;
+                for (var j = 0; j<org.length; j++){
+                    if (org[j] === current[i]){
+                        find = true;
+                        break;
+                    }
+                }
+                if (!find){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+</script>
