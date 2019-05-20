@@ -8,7 +8,7 @@ using MySql.Data.MySqlClient;
 
 namespace SideSpaceAPI.Controllers
 {
-    //Story results for hospital.(Used in Iteration 1 and 2)
+    //Store results for hospital.(Used in Iteration 1 and 2)
     public class Results
     {
         public string HName { get; set; }
@@ -33,30 +33,10 @@ namespace SideSpaceAPI.Controllers
         }
     }
 
-    //Story results for Postcode.(Used in Iteration 3)
-    public class PostcodeResults
-    {
-        public string Postcode { get; set; }
-        public string Suburb { get; set; }
-        public string Lat { get; set; }
-        public string Lon { get; set; }
-        public string Error { get; set; }
-
-        public PostcodeResults(string Postcode, string Suburb, string Lat, string Lon, string Error)
-        {
-            this.Postcode = Postcode;
-            this.Suburb = Suburb;
-            this.Lat = Lat;
-            this.Lon = Lon;
-            this.Error = Error;
-        }
-    }
-
-    //Story results for hospitals with private and placeid info.(Used in Iteration 3)
+    //Store results for hospitals with private and placeid info.(Used in Iteration 3 and forward)
     public class Hospitals
     {
         public string HName { get; set; }
-        public string Address { get; set; }
         public string Postcode { get; set; }
         public string Type { get; set; }
         public string Lat { get; set; }
@@ -64,10 +44,9 @@ namespace SideSpaceAPI.Controllers
         public string PlaceID { get; set; }
         public string Error { get; set; }
 
-        public Hospitals(string HName, string Address, string Postcode, string Type, string Lat, string Lng, string PlaceID, string Error)
+        public Hospitals(string HName, string Postcode, string Type, string Lat, string Lng, string PlaceID, string Error)
         {
             this.HName = HName;
-            this.Address = Address;
             this.Postcode = Postcode;
             this.Type = Type;
             this.Lat = Lat;
@@ -197,46 +176,7 @@ namespace SideSpaceAPI.Controllers
         }
     }
 
-    //Controller to get VIC postcode and suburb info.(Used in Iteration 3)
-    public class PostcodeController : ApiController
-    {
-        // GET api/postcode
-        public List<PostcodeResults> Get()
-        {
-            // Create connection
-            MySqlConnection conn = WebApiConfig.conn();
-
-            MySqlCommand query = conn.CreateCommand();
-            query.CommandText = "SELECT * FROM postcode;";
-
-            var results = new List<PostcodeResults>();
-
-            try
-            {
-                conn.Open();
-            }
-            catch (MySql.Data.MySqlClient.MySqlException ex)
-            {
-                results.Add(new PostcodeResults(null, null, null, null, ex.ToString()));
-            }
-
-            MySqlDataReader fetch_query = query.ExecuteReader();
-
-            while (fetch_query.Read())
-            {
-                results.Add(new PostcodeResults(
-                    fetch_query["Postcode"].ToString(),
-                    fetch_query["Suburb"].ToString(),
-                    fetch_query["Lat"].ToString(),
-                    fetch_query["Lon"].ToString(),
-                    null));
-            }
-
-            return results;
-        }
-    }
-
-    // Controller for getting updated hospitals' info (with private and placeid). (Used in Iteration 3)
+    // Controller for getting updated hospitals' info (with private and placeid). (Used in Iteration 3 and forward)
     public class HospitalController : ApiController
     {
         // GET api/values
@@ -256,7 +196,7 @@ namespace SideSpaceAPI.Controllers
             }
             catch (MySql.Data.MySqlClient.MySqlException ex)
             {
-                hospitals.Add(new Hospitals(null, null, null, null, null, null, null, ex.ToString()));
+                hospitals.Add(new Hospitals(null, null, null, null, null, null, ex.ToString()));
             }
 
             MySqlDataReader fetch_query = query.ExecuteReader();
@@ -264,7 +204,6 @@ namespace SideSpaceAPI.Controllers
             while (fetch_query.Read())
             {
                 hospitals.Add(new Hospitals(fetch_query["HName"].ToString(),
-                    fetch_query["Address"].ToString(),
                     fetch_query["Postcode"].ToString(),
                     fetch_query["Type"].ToString(),
                     fetch_query["Lat"].ToString(),
