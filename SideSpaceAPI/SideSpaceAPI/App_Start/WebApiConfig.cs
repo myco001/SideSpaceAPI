@@ -10,7 +10,7 @@ namespace SideSpaceAPI
     {
         public static MySqlConnection conn()
         {
-            String conn_string = "server=sidespacedbv1.cjvk3kpipmcv.ap-southeast-2.rds.amazonaws.com;port=3306;database=ssdbv1;username=ghost;password=monashie;";
+            String conn_string = "server=YOUR_DATABASE_ENDPOINT;port=PORT_NUMBER;database=DATABASE_NAME;username=YOURUSERNAME;password=YOURPASSWORD;";
             MySqlConnection conn = new MySqlConnection(conn_string);
 
             return conn;
